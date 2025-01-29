@@ -5,11 +5,6 @@ from Problem import *
 
 
 
-
-
-
-
-
 # --- breadth-first
 bfs_visited = 0
 def breadth_first_search(problem):
@@ -78,24 +73,24 @@ def best_first_search(problem):
     - evaluation function h(n) (heuristic) = estimate cost from n to closest goal
     """
     global greedy_visited
-    greedy_visited = 0  # Reset the counter for each search
+    greedy_visited = 0  # reset the counter for each search
     node = Node(problem.initial_state)
     node.f_value(problem)
-    frontier = [(node.f, node)]  # Use a list as a priority queue
+    queue = [(node.f, node)]  # use a list as a priority queue
     explored = set()
 
-    while frontier:
-        _, node = min(frontier, key=lambda x: x)  # Get node with lowest f-value
-        frontier.remove((_, node))  # Remove the best node from the frontier
-        greedy_visited += 1  # Increment the counter for each visited city
+    while queue:
+        _, node = min(queue, key=lambda x: x)  # get node with lowest f-value
+        queue.remove((_, node))  # remove the best node from the frontier
+        greedy_visited += 1  # increment the counter for each visited city
         if problem.goal_test(node.state):
-            return node  # Solution found
+            return node  # solution found
 
         explored.add(node.state)
         for child in node.expand(problem):
             child.f_value(problem)
-            if child.state not in explored and child not in [n for (_, n) in frontier]:
-                frontier.append((child.f, child))  # Add child to the frontier
+            if child.state not in explored and child not in [n for (_, n) in queue]:
+                queue.append((child.f, child))  # add child to the frontier
 
     return None  # no solution found
 
