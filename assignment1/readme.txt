@@ -1,7 +1,8 @@
 
-
-
-
+Uses 4 different search algorithms (BFS, DFS, Greedy, A*) to find path 
+between a starting Romanian city (initial_state) (from map in RomanianMapProblem)
+and a goal city (goal_state).
+Outputs the results (path, path cost, number of cities visited) for each search algorithm.
 
 main.py
     in main function:
@@ -14,8 +15,6 @@ main.py
     best_first_search(problem)
     a_star_search(problem)
 
-
-
 Node.py:
     Node class
         (state, parent, action, path_cost)
@@ -25,7 +24,6 @@ Node.py:
         solution() - returns sequence of actions to reach this node
         path() - returns list of nodes from root to self
         f_value(problem) - calculates the f value from cost + heuristic, updates self.f
-
 
 Problem.py:
     RomanianMapProblem class
