@@ -1,4 +1,4 @@
-
+import math
 
 """
     RomanianMapProblem class
@@ -83,14 +83,18 @@ class RomanianMapProblem:
         # if goal is not Bucharest, estimate the SLD
         if state in self.sld_to_bucharest:
             # approach 1: use Bucharest as an intermediate reference
+            #   SLD(state, goal) >=  | self.sld_to_bucharest[state] - self.sld_to_bucharest[goal] | 
             if reference_city == None:
                 return abs(self.sld_to_bucharest[state] - self.sld_to_bucharest[goal])
             # approach 2: use a reference city to estimate SLD
+            #   calculates absolute difference in distances to the reference_city 
+            #   from the state and the goal, providing a lower bound on the actual distance 
+            #   between state and goal.
             elif reference_city in self.sld_to_bucharest:
                 return abs(self.sld_to_bucharest[state] - self.sld_to_bucharest[reference_city]) + \
                     abs(self.sld_to_bucharest[goal] - self.sld_to_bucharest[reference_city])
 
-        return float('inf') # invalid 
+        return math.inf # invalid 
     
         
 
