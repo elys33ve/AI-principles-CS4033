@@ -2,18 +2,37 @@ import math, heapq
 from Node import *
 from Problem import *
 
+"""
+- adjust initial_state and goal_state in main for the starting and end cities
+
+--- search algorithm functions:
+
+    BFS     breadth_first_search(problem)
+
+    DFS     depth_first_search(problem, limit)
+
+    Best-First      best_first_search(problem)
+
+    A*      a_star_search(problem)
+
+--- used classes:
+    (Node.py) Node class
+    (Problem.py) RomanianMapProblem class
+
+"""
+
+### ===========================================================================
 
 
-
-# --- breadth-first
+### ========== Breadth-First Search (BFS) ========== ###
 bfs_visited = 0
 def breadth_first_search(problem):
     """
-    BFS:
     - expand shallowest unexpanded node
     - first-in, first-out (FIFO) queue, successors at end
     """
     global bfs_visited
+    bfs_visited = 0
     node = Node(problem.initial_state)
     if problem.goal_test(node.state):
         return node  # return solution path
@@ -27,7 +46,7 @@ def breadth_first_search(problem):
         bfs_visited += 1    # incr counter for each visited city
 
         for child in node.expand(problem):
-            if child.state not in explored and child not in queue:
+            if child.state not in explored and child not in queue:  # prevents revisiting **
                 if problem.goal_test(child.state):
                     return child
                 queue.append(child)
@@ -36,22 +55,21 @@ def breadth_first_search(problem):
 
 
 
-# --- depth-first
+### ========== Depth-First Search (DFS) ========== ###
 dfs_visited = 0
 def depth_first_search(problem, limit):
     """
-    DFS:
     - expand deepest unexpanded node
     - last-in, first-out (LIFO) queue, successors at front
     """
     global dfs_visited
-    dfs_visited = 0  # reset the counter for each search
+    dfs_visited = 0
     node = Node(problem.initial_state)
-    frontier = [(node, limit)]  # LIFO queue
+    queue = [(node, limit)]  # LIFO queue
     explored = set()
 
-    while frontier:
-        node, node_limit = frontier.pop()  # pop the last element (LIFO)
+    while queue:
+        node, node_limit = queue.pop()  # pop the last element (LIFO)
         dfs_visited += 1  # increment the counter for each visited city
         if problem.goal_test(node.state):
             return node  # solution found
@@ -59,17 +77,16 @@ def depth_first_search(problem, limit):
             explored.add(node.state)
             for child in node.expand(problem):
                 if child.state not in explored:
-                    frontier.append((child, node_limit - 1))  # add child with decremented limit
+                    queue.append((child, node_limit - 1))  # add child with decremented limit
 
     return None  # no solution found
 
 
-# --- Best-First Search (Greedy Algorithm)
+### ========== Best-First Search (Greedy Algorithm) ========== ###
 greedy_visited = 0
 def best_first_search(problem):
     """
-    Best-First / Greedy (non-recursive):
-    - expands the node that appears closest to goal
+    - expand the node that appears closest to goal
     - evaluation function h(n) (heuristic) = estimate cost from n to closest goal
     """
     global greedy_visited
@@ -89,67 +106,68 @@ def best_first_search(problem):
         explored.add(node.state)
         for child in node.expand(problem):
             child.f_value(problem)
-            if child.state not in explored and child not in [n for (_, n) in queue]:
+            if child.state not in explored:
                 queue.append((child.f, child))  # add child to the frontier
 
     return None  # no solution found
 
 
-### --- A* Search
+### ========== A* Search ========== ###
 a_star_visited = 0
 def a_star_search(problem):
     """
-    A* Search:
     - avoid expanding paths that are already expensive
-    - Evaluation function f (n) = g(n) + h(n)
-        - g(n) = cost so far to reach n
-        - h(n) = estimated cost to goal from n
-        - f(n) = estimated total cost of path through n to goal
-    - uses an admissible heuristic
+    - uses f(n) = g(n) + h(n) for evaluation
+        - g(n): cost to reach node n
+        - h(n): estimated cost to goal from n
+    - utilizes an admissible heuristic
     """
     global a_star_visited
+    a_star_visited = 0
     node = Node(problem.initial_state)
-    node.f_value(problem)  # initialize first node f-cost
+    node.f_value(problem)  # compute first f-value (f(n) = path_cost(n) + heuristic(n))
 
     queue = [(node.f, node)]  # priority queue using heapq
     heapq.heapify(queue)
-    explored = set()
+    explored = set()    # visited cities
+    cost_tracker = {node.state: node.f}  # track lowest f-cost for each state
 
     while queue:
         _, node = heapq.heappop(queue)  # get node with lowest f-cost
-        a_star_visited += 1     # incr counter for visited city
         if problem.goal_test(node.state):
             return node     # return solution
         
         explored.add(node.state)
+        a_star_visited += 1
         for child in node.expand(problem):
-            # set the child node's heuristic
-            child.f_value(problem)
-            if child.state not in explored:
-                if child not in queue:
-                    heapq.heappush(queue, (child.f, child))
-                else:
-                    # child is in queue, check if this path is better
-                    for i, (_, n) in enumerate(queue):
-                        if n.state == child.state and child.path_cost < n.path_cost:
-                            queue[i] = (child.f, child)
-                            heapq.heapify(queue)  # re-heapify after updating
-                            break
-    
+            child.f_value(problem)      # set child node's f-value
+
+            if child.state in explored:
+                continue  # ignore already explored states
+
+            if child.state not in cost_tracker or child.f < cost_tracker[child.state]:
+                # if the new path is better, update the queue and tracker
+                cost_tracker[child.state] = child.f
+                heapq.heappush(queue, (child.f, child))    
     return None     # no solution found
 
 
+### ===========================================================================
+### ===========================================================================
+
 if __name__=="__main__":
     initial_state = 'Neamt'
-    goal_state = 'Drobeta'#'Giurgiu'  #'Craiova'
+    goal_state = 'Arad'
     problem = RomanianMapProblem(initial_state, goal_state)
-    heuristic_value = problem.heuristic(initial_state)
+    heuristic_value = problem.heuristic(initial_state, goal_state)#, reference_city='Pitesti')
+
+    print(f"Heuristic value ({initial_state}, {goal_state}): {heuristic_value}\n")
 
     # BFS
     print("===== Breadth-First Search")
     bfs = breadth_first_search(problem)
     if bfs:
-        print(f"{bfs.solution()} \ncost: {bfs.solution_distance()} \nvisited: {bfs_visited}")
+        print(f"path: {bfs.solution()} \ncost: {bfs.path_cost} \nvisited: {bfs_visited}")
 
     # DFS
     print("===== Depth-First Search")
@@ -158,7 +176,7 @@ if __name__=="__main__":
     if dfs == 'cutoff':
         print(f"cutoff {limit}")
     elif dfs:
-        print(f"{dfs.solution()} \ncost: {dfs.solution_distance()} \nvisited: {dfs_visited}")
+        print(f"path: {dfs.solution()} \ncost: {dfs.path_cost} \nvisited: {dfs_visited}")
 
     # Best-First (Greedy Algorithm)
     print("===== Best-First (Greedy Algorithm)")
@@ -166,14 +184,13 @@ if __name__=="__main__":
     if type(greedy) == str:
         print(greedy)
     else:
-        print(f"{greedy.solution()} \ncost: {greedy.solution_distance()} \nvisited: {greedy_visited}")
+        print(f"path: {greedy.solution()} \ncost: {greedy.path_cost} \nvisited: {greedy_visited}")
 
     # A* Search
     print("===== A* Search")
     a_star = a_star_search(problem)
     if a_star:
-        print(f"{a_star.solution()} \ncost: {a_star.solution_distance()} \nvisited: {a_star_visited}")
+        print(f"path: {a_star.solution()} \ncost: {a_star.path_cost} \nvisited: {a_star_visited}")
 
-    # --
-    print(f"Heuristic value ({initial_state}, {goal_state}): {heuristic_value}")
+
 
