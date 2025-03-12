@@ -1,29 +1,29 @@
 /*  AI PRINCIPLES AND APPLICATIONS - ASSIGNMENT 3: Blocks World
     Group 14
-    Program to implement the Blocks' World Problem in Prolog.   */
+    Program to implement the Blocks' World Problem in Prolog.   
+
+solve_and_display.                                              */
 
 % define blocks in world
 blocks([a, b, c, d]).
+
+
+/*  =========== Define Start and Goal ===========  */
+
+/*
+start([[on,a,b],[on,b,table],[on,c,d],[clear,a],[clear,c],[on,d,table]]).
+goal([[on,d,a], [on,a,c], [on,c,b], [on,b,table], [clear,d]]).
+*/
+start([[on,a,c],[on,b,table],[on,c,b],[clear,d],[on,d,a]]).
+goal([[on,b,c],[on,a,table],[on,c,table],[on,d,table],[clear,b],[clear,a],[clear,d]]).
+
+
+/*  ---------- Helpers ---------- */
 
 % block X as member of blocks
 block(X) :-
     blocks(BLOCKS),
     member(X, BLOCKS).
-
-
-/*  =========== Start and Goal ===========  */
-
-% goal permutations to compare
-goal(State) :-
-    actual_goal(GoalState),
-    permutation(State, GoalState).
-
-
-start([[on,a,b],[on,b,table],[on,c,d],[clear,a],[clear,c],[on,d,table]]).
-actual_goal([[on,d,a], [on,a,c], [on,c,b], [on,b,table], [clear,d]]).
-
-
-/*  ---------- Helpers ---------- */
 
 % --- not equal
 notequal(X, X) :- !, fail.
@@ -35,7 +35,7 @@ substitute(X, Y, [H|T], [H|T1]) :-
     substitute(X, Y, T, T1).
 
 
-/*  ---------- move ---------- */
+/*  ---------- Move ---------- */
 
 % --- move
 % move X from Y to Z (X, Y, Z are blocks. S1, S2 are states)
@@ -65,7 +65,12 @@ move(X, table, Y, S1, S2) :-
     select([clear, Y], INT, S2).            % Y is no longer clear
 
 
-/*  ---------- search ---------- */
+/*  ---------- Search ---------- */
+
+% goal permutations to compare
+goalCheck(State) :-
+    goal(GoalState),
+    permutation(State, GoalState).
 
 % connectivity between states
 path(S1, S2) :- move(_, _, _, S1, S2).
@@ -77,8 +82,8 @@ connect(S1, S2) :- path(S1, S2).
 notYetVisited(State, PathSoFar) :-
     \+ (member(VisitedState, PathSoFar), permutation(State, VisitedState)).
 
-% --- depth-first search with visit count and path length
-depthFirst(X, [X], _, 0, 1):- goal(X), !.                       % base case: goal check
+% --- depth-first search
+depthFirst(X, [X], _, 0, 1):- goalCheck(X), !.                       % base case: goal check
 depthFirst(X, [X|Ypath], VISITED, PathLength, VisitCount):-     % recursive case
     connect(X, Y),
     notYetVisited(Y, VISITED),
@@ -87,24 +92,25 @@ depthFirst(X, [X|Ypath], VISITED, PathLength, VisitCount):-     % recursive case
     VisitCount is SubVisitCount + 1.
 
 
-/*  ---------- solve and print ---------- */
+/*  ---------- Solve and Print ---------- */
 
 % --- solve with visit count and path length
 solve(Path, PathLength, VisitCount) :-
     start(S),
     depthFirst(S, Path, [S], PathLength, VisitCount).
 
-% --- show path (newlines for each state)
-print_path([]).
-print_path([H|T]) :-
-    write(H), write(','),
-    nl,
-    print_path(T).
+% --- show path with newlines for each state
+printPath([]).
+printPath([H|T]) :-
+    write(H), write(','), nl,
+    printPath(T).
 
 % --- solve and display results
 solve_and_display :-
     solve(Path, PathLength, VisitCount),
     write('Path:'), nl,
-    print_path(Path),
+    printPath(Path),
     write('Path Length: '), write(PathLength), nl,
     write('Visit Count: '), write(VisitCount), nl.
+
+    
