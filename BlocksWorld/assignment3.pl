@@ -43,7 +43,7 @@ move(X, Y, Z, S1, S2):-
     member([clear, X], S1),                 % find a clear block X in S1
     member([on, X, Y], S1), block(Y),       % find a block on which X sits
     member([clear, Z], S1), notequal(X, Z), % find another clear block, Z
-    %write('Move '), write(X), write(' from '), write(Y), write(' to '), write(Z), nl,
+    write('Move '), write(X), write(' from '), write(Y), write(' to '), write(Z), nl,
     substitute([on, X, Y], [on, X, Z], S1, INT),    % remove X from Y, place it on Z
     substitute([clear, Z], [clear, Y], INT, S2).    % Z is no longer clear; Y is now clear
 
@@ -51,7 +51,7 @@ move(X, Y, Z, S1, S2):-
 move(X, Y, table, S1, S2) :-
     member([clear, X], S1),
     member([on, X, Y], S1), block(Y),
-    %write('Move '), write(X), write(' from '), write(Y), write(' to table'), nl,
+    write('Move '), write(X), write(' from '), write(Y), write(' to table'), nl,
     substitute([on, X, Y], [on, X, table], S1, INT),    % remove X from Y, place X on table
     append([[clear, Y]], INT, S2).                      % Y is now clear
 
@@ -60,7 +60,7 @@ move(X, table, Y, S1, S2) :-
     member([clear, X], S1),
     member([on, X, table], S1), block(Y),
     member([clear, Y], S1), notequal(X, Y), % find another clear block, Y
-    %write('Move '), write(X), write(' from table to '), write(Y), nl,
+    write('Move '), write(X), write(' from table to '), write(Y), nl,
     substitute([on, X, table], [on, X, Y], S1, INT),
     select([clear, Y], INT, S2).            % Y is no longer clear
 
@@ -75,7 +75,7 @@ goalCheck(State) :-
 % connectivity between states
 path(S1, S2) :- move(_, _, _, S1, S2).
 connect(S1, S2) :- path(S1, S2).
-%connect(S1, S2) :- path(S2, S1).
+%connect(S1, S2) :- path(S2, S1).   % bidirectional / symmetry
 
 % --- ensure state has not been visited
 % checks permutations to treat list as set
@@ -83,13 +83,14 @@ notYetVisited(State, PathSoFar) :-
     \+ (member(VisitedState, PathSoFar), permutation(State, VisitedState)).
 
 % --- depth-first search
-depthFirst(X, [X], _, 0, 1):- goalCheck(X), !.                       % base case: goal check
+depthFirst(X, [X], _, 0, 1):- goalCheck(X), !.                  % base case: goal check
 depthFirst(X, [X|Ypath], VISITED, PathLength, VisitCount):-     % recursive case
     connect(X, Y),
     notYetVisited(Y, VISITED),
     depthFirst(Y, Ypath, [Y|VISITED], SubPathLength, SubVisitCount),
     PathLength is SubPathLength + 1,
     VisitCount is SubVisitCount + 1.
+
 
 
 /*  ---------- Solve and Print ---------- */
@@ -113,4 +114,3 @@ solve_and_display :-
     write('Path Length: '), write(PathLength), nl,
     write('Visit Count: '), write(VisitCount), nl.
 
-    
