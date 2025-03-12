@@ -75,7 +75,7 @@ goalCheck(State) :-
 % connectivity between states
 path(S1, S2) :- move(_, _, _, S1, S2).
 connect(S1, S2) :- path(S1, S2).
-%connect(S1, S2) :- path(S2, S1).   % bidirectional / symmetry
+%connect(S1, S2) :- path(S2, S1).   
 
 % --- ensure state has not been visited
 % checks permutations to treat list as set
@@ -83,22 +83,20 @@ notYetVisited(State, PathSoFar) :-
     \+ (member(VisitedState, PathSoFar), permutation(State, VisitedState)).
 
 % --- depth-first search
-depthFirst(X, [X], _, 0, 1):- goalCheck(X), !.                  % base case: goal check
-depthFirst(X, [X|Ypath], VISITED, PathLength, VisitCount):-     % recursive case
+depthFirst(X, [X], _, 1):- goalCheck(X), !.         % base case: goal check
+depthFirst(X, [X|Ypath], VISITED, PathLength):-     % recursive case
     connect(X, Y),
     notYetVisited(Y, VISITED),
-    depthFirst(Y, Ypath, [Y|VISITED], SubPathLength, SubVisitCount),
-    PathLength is SubPathLength + 1,
-    VisitCount is SubVisitCount + 1.
-
+    depthFirst(Y, Ypath, [Y|VISITED], SubPathLength),
+    PathLength is SubPathLength + 1.
 
 
 /*  ---------- Solve and Print ---------- */
 
 % --- solve with visit count and path length
-solve(Path, PathLength, VisitCount) :-
+solve(Path, PathLength) :-
     start(S),
-    depthFirst(S, Path, [S], PathLength, VisitCount).
+    depthFirst(S, Path, [S], PathLength).
 
 % --- show path with newlines for each state
 printPath([]).
@@ -108,9 +106,8 @@ printPath([H|T]) :-
 
 % --- solve and display results
 solve_and_display :-
-    solve(Path, PathLength, VisitCount),
+    solve(Path, PathLength),
     write('Path:'), nl,
     printPath(Path),
-    write('Path Length: '), write(PathLength), nl,
-    write('Visit Count: '), write(VisitCount), nl.
+    write('Path Length: '), write(PathLength), nl.
 
