@@ -11,26 +11,11 @@ e='🄴'
 f='🄵'
 
 n = 6
-path = [[[on,a,c],[on,b,table],[on,c,b],[clear,d],[on,d,a]],
-[[clear,a],[on,a,c],[on,b,table],[on,c,b],[clear,d],[on,d,table]],
-[[clear,a],[on,a,d],[on,b,table],[on,c,b],[clear,c],[on,d,table]],
-[[clear,b],[on,a,d],[on,b,table],[on,c,a],[clear,c],[on,d,table]],
-[[clear,a],[clear,b],[on,a,d],[on,b,table],[on,c,table],[clear,c],[on,d,table]],
-[[clear,a],[clear,d],[on,a,b],[on,b,table],[on,c,table],[clear,c],[on,d,table]],
-[[clear,a],[clear,d],[on,a,c],[on,b,table],[on,c,table],[clear,b],[on,d,table]],
-[[clear,c],[clear,a],[clear,d],[on,a,table],[on,b,table],[on,c,table],[clear,b],[on,d,table]],
-[[clear,c],[clear,d],[on,a,table],[on,b,table],[on,c,a],[clear,b],[on,d,table]],
-[[clear,c],[clear,a],[on,a,table],[on,b,table],[on,c,d],[clear,b],[on,d,table]],
-[[clear,c],[clear,a],[on,a,table],[on,b,table],[on,c,b],[clear,d],[on,d,table]],
-[[clear,c],[on,a,table],[on,b,table],[on,c,b],[clear,d],[on,d,a]],
-[[clear,c],[on,a,table],[on,b,table],[on,c,d],[clear,b],[on,d,a]],
-[[clear,d],[clear,c],[on,a,table],[on,b,table],[on,c,table],[clear,b],[on,d,a]],
-[[clear,d],[clear,a],[on,a,table],[on,b,table],[on,c,table],[clear,b],[on,d,c]],
-[[clear,d],[on,a,table],[on,b,a],[on,c,table],[clear,b],[on,d,c]],
-[[clear,d],[on,a,table],[on,b,a],[on,c,table],[clear,c],[on,d,b]],
-[[clear,b],[clear,d],[on,a,table],[on,b,a],[on,c,table],[clear,c],[on,d,table]],
-[[clear,b],[clear,a],[on,a,table],[on,b,d],[on,c,table],[clear,c],[on,d,table]],
-[[clear,b],[clear,a],[on,a,table],[on,b,c],[on,c,table],[clear,d],[on,d,table]],]
+path = [[[on,e,d],[on,d,a],[on,a,table],[on,b,c],[on,c,table],[on,f,table],[clear,e],[clear,b],[clear,f]],
+[[clear,d],[on,e,table],[on,d,a],[on,a,table],[on,b,c],[on,c,table],[on,f,table],[clear,e],[clear,b],[clear,f]],
+[[clear,d],[on,e,table],[on,d,f],[on,a,table],[on,b,c],[on,c,table],[on,f,table],[clear,e],[clear,b],[clear,a]],
+[[clear,d],[on,e,table],[on,d,f],[on,a,b],[on,b,c],[on,c,table],[on,f,table],[clear,e],[clear,a]],
+[[clear,d],[on,e,a],[on,d,f],[on,a,b],[on,b,c],[on,c,table],[on,f,table],[clear,e]]]
 
 
 def blockspace(tblocks, onblocks, n):
@@ -38,25 +23,41 @@ def blockspace(tblocks, onblocks, n):
     for x in tblocks:
         idx = space[n-1].index(0)
         space[n-1][idx] = x
-
-    for on in onblocks:
-        if on[1] not in tblocks:
-            onblocks.remove(on)
-            onblocks.append(on)
  
+    put_blocks = []
     for on in onblocks:
+        put = False
         for i in range(n-1,-1,-1):
-            if on[1] in space[i]:
-                space[i-1][space[i].index(on[1])] = on[0]
+            if on[1] in space[i]:   # found
+                space[i-1][space[i].index(on[1])] = on[0]   
+                put = True
+                if on in put_blocks:
+                    put_blocks.remove(on)
+        if put == False and on not in put_blocks:
+            put_blocks.append(on)
+    # this is terrible but i dont feel like fixing en
+    while put_blocks != []:
+        for on in put_blocks:
+            put = False
+            for i in range(n-1,-1,-1):
+                if on[1] in space[i]:   # found
+                    space[i-1][space[i].index(on[1])] = on[0]   
+                    put = True
+                    if on in put_blocks:
+                        put_blocks.remove(on)
+            if put == False and on not in put_blocks:
+                put_blocks.append(on)
+
     return space
 
 
 def print_steps(arr):
     n = len(arr[0])
     num_arrays = len(arr)
+    n_cols = 7
 
-    for start_index in range(0, num_arrays, 5):  # 5 states at once / per line
-        end_index = min(start_index + 5, num_arrays)
+    for start_index in range(0, num_arrays, n_cols):  # 5 states at once / per line
+        end_index = min(start_index + n_cols, num_arrays)
         current_arrays = arr[start_index:end_index]
 
         # print header for current chunk
@@ -75,9 +76,10 @@ def print_steps(arr):
 def print_steps2(arr):
     n = len(arr[0])
     num_arrays = len(arr)
+    n_cols = 5
 
-    for start_index in range(0, num_arrays, 5):  # 5 states at once / per line
-        end_index = min(start_index + 5, num_arrays)
+    for start_index in range(0, num_arrays, n_cols):  # 5 states at once / per line
+        end_index = min(start_index + n_cols, num_arrays)
         current_arrays = arr[start_index:end_index]
 
         # print header for current chunk
@@ -88,7 +90,7 @@ def print_steps2(arr):
             row_line = ""
             for array in current_arrays:
                 row = array[row_index]
-                s = " ".join(map(str, row)) + "\t\t"
+                s = " ".join(map(str, row)) + "\t"
                 row_line += s.replace('0',"🅉")
             print(row_line)
         print()
